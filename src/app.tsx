@@ -1,4 +1,4 @@
-import UploadWidget from './components/upload-widget'
+import UploadWidget from "./components/upload-widget"
 
 function App() {
   return (

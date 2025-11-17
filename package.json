@@ -7,7 +7,6 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-
     "check": "biome check .",
     "check:watch": "biome check --watch .",
     "format": "biome format .",
@@ -17,10 +16,13 @@
     "ci": "biome ci ."
   },
   "dependencies": {
+    "@radix-ui/react-collapsible": "^1.1.12",
     "@tailwindcss/vite": "^4.1.17",
     "lucide-react": "^0.554.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "tailwind-merge": "^3.4.0",
+    "tailwind-variants": "^3.1.1",
     "tailwindcss": "^4.1.17"
   },
   "devDependencies": {
