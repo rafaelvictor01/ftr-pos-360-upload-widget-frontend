@@ -1,8 +1,8 @@
 function App() {
   return (
-    <>
-      Hello World
-    </>
+    <div className="text-3xl bg-primary">
+      Hello world!
+    </div>
   )
 }
 
