@@ -1,9 +1,15 @@
 import * as Progress from '@radix-ui/react-progress'
 import { Download, ImageUp, Link2, RefreshCcw, X } from "lucide-react"
 import { motion } from 'motion/react'
+import type { UploadTp } from '../types/upload'
+import formatBytes from '../utils/format-bytes'
 import Button from "./button"
 
-function UploadWidgetListItem() {
+interface IProps {
+  upload: UploadTp
+}
+
+function UploadWidgetListItem(props: IProps) {
   return (
     <motion.div
       className="p-3 rounded-lg flex flex-col gap-3 shadow-shape-content bg-white/2 relative overflow-hidden"
@@ -14,11 +20,11 @@ function UploadWidgetListItem() {
       <div className="flex flex-col gap-1">
         <span className="text-xs font-medium flex items-center gap-1">
           <ImageUp className="size-3 text-zinc-300" strokeWidth={1.5} />
-          <span>fileName.png</span>
+          <span>{props.upload.name}</span>
         </span>
 
         <span className="text-[0.625rem] text-zinc-400 flex gap-1.5 items-center">
-          <span className="line-through">3mb</span>
+          <span className="line-through">{formatBytes(props.upload.file.size)}</span>
 
           <span className="size-1 rounded-full bg-zinc-700" />
 

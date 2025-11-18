@@ -1,9 +1,12 @@
 import { motion } from 'motion/react'
 import { useDropzone } from "react-dropzone"
+import { useUploads } from '../store/uploads'
 import CircularProgressBar from "./circular-progress-bar"
 
 function UploadWidgetDropzone() {
-  const isThereAnyPendingUpload = true
+  const { addUploads } = useUploads()
+
+  const isThereAnyPendingUpload = false
   const uploadGlobalPercentage = 66
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -12,6 +15,9 @@ function UploadWidgetDropzone() {
       'image/jpeg': [],
       'image/png': []
     },
+    onDrop(acceptedFiles) {
+      addUploads(acceptedFiles)
+    }
   })
 
   return (
