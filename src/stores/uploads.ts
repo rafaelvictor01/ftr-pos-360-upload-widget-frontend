@@ -1,7 +1,8 @@
-import type { AxiosError } from 'axios'
+import { type AxiosError, CanceledError } from 'axios'
 import { enableMapSet } from 'immer'
 import { create } from "zustand"
 import { immer } from 'zustand/middleware/immer'
+import { useShallow } from 'zustand/shallow'
 import { uploadFileController } from '../controllers/upload-file-controller'
 import { UploadStatusEnumValues } from '../enums/upload-status-enum'
 import type { UploadTp } from "../types/upload"
@@ -17,6 +18,21 @@ enableMapSet()
 
 export const useUploads = create<TUploadsState, [['zustand/immer', never]]>(
   immer((set, get) => {
+    function updateUpload(uploadId: string, data: Partial<UploadTp>) {
+      const upload = get().uploads.get(uploadId);
+
+      if (!upload) {
+        return
+      }
+
+      set((state) => {
+        state.uploads.set(uploadId, {
+          ...upload,
+          ...data,
+        })
+      })
+    }
+
     async function processUpload(uploadId: string) {
       const upload = get().uploads.get(uploadId)
 
@@ -27,28 +43,15 @@ export const useUploads = create<TUploadsState, [['zustand/immer', never]]>(
           file: upload.file,
           signal: upload.ctrl.signal,
           onProgress: (sizeInBytes) => {
-            set((oldState) => {
-              oldState.uploads.set(uploadId, {
-                ...upload,
-                uploadSizeInBytes: sizeInBytes
-              })
-            })
+            updateUpload(uploadId, { uploadSizeInBytes: sizeInBytes })
           }
         })
 
-        set((oldState) => {
-          oldState.uploads.set(uploadId, {
-            ...upload,
-            status: UploadStatusEnumValues.SUCCESS
-          })
-        })
+        updateUpload(uploadId, { status: UploadStatusEnumValues.SUCCESS })
       } catch (err) {
-        const axiosError = err as AxiosError
+        if (!(err instanceof CanceledError)) {
+          const axiosError = err as AxiosError
 
-        if (
-          axiosError.code !== 'ERR_ABORTED' &&
-          axiosError.code !== 'ERR_CANCELED'
-        ) {
           console.error([
             'Unexpected Error:',
             `Code: ${axiosError.response?.status}`,
@@ -56,12 +59,7 @@ export const useUploads = create<TUploadsState, [['zustand/immer', never]]>(
             `Message: ${axiosError.message}`
           ])
 
-          set((oldState) => {
-            oldState.uploads.set(uploadId, {
-              ...upload,
-              status: UploadStatusEnumValues.ERROR
-            })
-          })
+          updateUpload(uploadId, { status: UploadStatusEnumValues.ERROR })
 
           throw err
         }
@@ -75,11 +73,9 @@ export const useUploads = create<TUploadsState, [['zustand/immer', never]]>(
 
       upload.ctrl.abort()
 
-      set((oldState) => {
-        oldState.uploads.set(uploadId, {
-          ...upload,
-          status: UploadStatusEnumValues.CANCELED
-        })
+      updateUpload(uploadId, {
+        status: UploadStatusEnumValues.CANCELED,
+        uploadSizeInBytes: upload.originalSizeInBytes
       })
     }
 
@@ -110,3 +106,34 @@ export const useUploads = create<TUploadsState, [['zustand/immer', never]]>(
     }
   })
 )
+
+export const usePendingUploads = () => {
+  return useUploads(
+    useShallow((store) => {
+      const isThereAnyPendingUploads = Array.from(store.uploads.values()).some(
+        (upload) => upload.status === UploadStatusEnumValues.PROGRESS
+      )
+
+      if (!isThereAnyPendingUploads) {
+        return { isThereAnyPendingUploads, globalPercentage: 100 }
+      }
+
+      const { total, uploaded } = Array.from(store.uploads.values()).reduce(
+        (acc, upload) => {
+          acc.total += upload.originalSizeInBytes
+          acc.uploaded += upload.uploadSizeInBytes
+
+          return acc
+        },
+        { total: 0, uploaded: 0 }
+      )
+
+      const globalPercentage = Math.min(
+        Math.round((uploaded * 100) / total),
+        100
+      )
+
+      return { isThereAnyPendingUploads, globalPercentage }
+    })
+  )
+}
