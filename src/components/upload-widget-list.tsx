@@ -1,7 +1,7 @@
-import { useUploads } from "../store/uploads";
-import UploadWidgetListItem from "./upload-widget-list-item";
+import { useUploads } from "../stores/uploads"
+import { UploadWidgetListItem } from "./upload-widget-list-item"
 
-function UploadWidgetList() {
+export function UploadWidgetList() {
   const uploads = useUploads((store) => store.uploads)
   const isUploadListEmpty = uploads.size === 0
 
@@ -24,5 +24,3 @@ function UploadWidgetList() {
     </div>
   )
 }
-
-export default UploadWidgetList

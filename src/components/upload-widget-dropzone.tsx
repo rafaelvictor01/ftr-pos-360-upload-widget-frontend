@@ -1,9 +1,9 @@
 import { motion } from 'motion/react'
 import { useDropzone } from "react-dropzone"
-import { useUploads } from '../store/uploads'
-import CircularProgressBar from "./circular-progress-bar"
+import { useUploads } from '../stores/uploads'
+import { CircularProgressBar } from './circular-progress-bar'
 
-function UploadWidgetDropzone() {
+export function UploadWidgetDropzone() {
   const { addUploads } = useUploads()
 
   const isThereAnyPendingUpload = false
@@ -55,5 +55,3 @@ function UploadWidgetDropzone() {
     </motion.div>
   )
 }
-
-export default UploadWidgetDropzone

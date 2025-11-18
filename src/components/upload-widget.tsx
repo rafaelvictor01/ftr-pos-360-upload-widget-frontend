@@ -1,11 +1,11 @@
 import * as Collapsible from "@radix-ui/react-collapsible"
 import { motion, useCycle } from 'motion/react'
-import UploadWidgetDropzone from "./upload-widget-dropzone"
-import UploadWidgetHeader from "./upload-widget-header"
-import UploadWidgetList from "./upload-widget-list"
-import UploadWidgetMinimizedButton from "./upload-widget-minimized-btn"
+import { UploadWidgetDropzone } from "./upload-widget-dropzone"
+import { UploadWidgetHeader } from "./upload-widget-header"
+import { UploadWidgetList } from "./upload-widget-list"
+import { UploadWidgetMinimizedButton } from "./upload-widget-minimized-btn"
 
-function UploadWidget() {
+export function UploadWidget() {
   const [isOpen, toggleOpen] = useCycle(false, true)
 
   return (
@@ -49,4 +49,3 @@ function UploadWidget() {
   )
 }
 
-export default UploadWidget

@@ -1,9 +1,9 @@
 import * as Collapsible from '@radix-ui/react-collapsible'
 import { Minimize2 } from "lucide-react"
-import Button from "./button"
-import UploadWidgetTitle from './upload-widget-title'
+import { Button } from './button'
+import { UploadWidgetTitle } from './upload-widget-title'
 
-export default function UploadWidgetHeader() {
+export function UploadWidgetHeader() {
   return (
     <div className="w-full p-4 py-2 bg-white/2 border-y-zinc-800 border-b flex items-center justify-between">
       <UploadWidgetTitle />

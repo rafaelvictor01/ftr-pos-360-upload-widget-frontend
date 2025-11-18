@@ -2,14 +2,14 @@ import * as Progress from '@radix-ui/react-progress'
 import { Download, ImageUp, Link2, RefreshCcw, X } from "lucide-react"
 import { motion } from 'motion/react'
 import type { UploadTp } from '../types/upload'
-import formatBytes from '../utils/format-bytes'
-import Button from "./button"
+import { formatBytes } from '../utils/format-bytes'
+import { Button } from './button'
 
 interface IProps {
   upload: UploadTp
 }
 
-function UploadWidgetListItem(props: IProps) {
+export function UploadWidgetListItem(props: IProps) {
   return (
     <motion.div
       className="p-3 rounded-lg flex flex-col gap-3 shadow-shape-content bg-white/2 relative overflow-hidden"
@@ -72,5 +72,3 @@ function UploadWidgetListItem(props: IProps) {
     </motion.div>
   )
 }
-
-export default UploadWidgetListItem

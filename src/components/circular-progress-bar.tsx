@@ -6,13 +6,13 @@ interface CircularProgressBarProps {
   progressColor?: string
 }
 
-const CircularProgressBar: React.FC<CircularProgressBarProps> = ({
+export function CircularProgressBar({
   progress,
   size = 120,
   strokeWidth = 8,
   circleColor = "text-zinc-800",
   progressColor = "text-indigo-500",
-}) => {
+}: CircularProgressBarProps) {
   const center = size / 2
   const radius = center - strokeWidth / 2
   const circumference = 2 * Math.PI * radius
@@ -54,5 +54,3 @@ const CircularProgressBar: React.FC<CircularProgressBarProps> = ({
     </div>
   )
 }
-
-export default CircularProgressBar
