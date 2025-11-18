@@ -17,7 +17,13 @@ export function UploadWidgetList() {
       ) : (
         <div className="flex flex-col gap-2">
             {Array.from(uploads.entries()).map(([uploadId, upload]) => {
-              return <UploadWidgetListItem key={uploadId} upload={upload} />
+              return (
+                <UploadWidgetListItem
+                  key={uploadId}
+                  upload={upload}
+                  uploadId={uploadId}
+                />
+              )
             })}
         </div>
       )}

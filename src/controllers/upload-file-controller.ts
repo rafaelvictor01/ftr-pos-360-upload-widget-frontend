@@ -9,7 +9,8 @@ export async function uploadFileController(props: IUploadFileRequestDTO): Promis
   const response = await axios.post('http://localhost:3333/upload', body, {
     headers: {
       'Content-Type': 'multipart/form-data'
-    }
+    },
+    signal: props.signal
   })
 
   return { url: response?.data?.url }
