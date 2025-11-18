@@ -19,6 +19,7 @@
     "@radix-ui/react-collapsible": "^1.1.12",
     "@radix-ui/react-progress": "^1.1.8",
     "@tailwindcss/vite": "^4.1.17",
+    "axios": "^1.13.2",
     "immer": "^10.2.0",
     "lucide-react": "^0.554.0",
     "motion": "^12.23.24",
