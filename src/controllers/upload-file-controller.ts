@@ -10,7 +10,10 @@ export async function uploadFileController(props: IUploadFileRequestDTO): Promis
     headers: {
       'Content-Type': 'multipart/form-data'
     },
-    signal: props.signal
+    signal: props.signal,
+    onUploadProgress(progressEvent) {
+      props.onProgress(progressEvent.loaded)
+    }
   })
 
   return { url: response?.data?.url }

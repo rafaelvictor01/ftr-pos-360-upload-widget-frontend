@@ -1,3 +1,4 @@
+import type { AxiosError } from 'axios'
 import { enableMapSet } from 'immer'
 import { create } from "zustand"
 import { immer } from 'zustand/middleware/immer'
@@ -24,7 +25,15 @@ export const useUploads = create<TUploadsState, [['zustand/immer', never]]>(
       try {
         await uploadFileController({
           file: upload.file,
-          signal: upload.ctrl.signal
+          signal: upload.ctrl.signal,
+          onProgress: (sizeInBytes) => {
+            set((oldState) => {
+              oldState.uploads.set(uploadId, {
+                ...upload,
+                uploadSizeInBytes: sizeInBytes
+              })
+            })
+          }
         })
 
         set((oldState) => {
@@ -33,13 +42,29 @@ export const useUploads = create<TUploadsState, [['zustand/immer', never]]>(
             status: UploadStatusEnumValues.SUCCESS
           })
         })
-      } catch {
-        set((oldState) => {
-          oldState.uploads.set(uploadId, {
-            ...upload,
-            status: UploadStatusEnumValues.ERROR
+      } catch (err) {
+        const axiosError = err as AxiosError
+
+        if (
+          axiosError.code !== 'ERR_ABORTED' &&
+          axiosError.code !== 'ERR_CANCELED'
+        ) {
+          console.error([
+            'Unexpected Error:',
+            `Code: ${axiosError.response?.status}`,
+            `Route: ${axiosError.request?.responseURL}`,
+            `Message: ${axiosError.message}`
+          ])
+
+          set((oldState) => {
+            oldState.uploads.set(uploadId, {
+              ...upload,
+              status: UploadStatusEnumValues.ERROR
+            })
           })
-        })
+
+          throw err
+        }
       }
     }
 
@@ -67,7 +92,9 @@ export const useUploads = create<TUploadsState, [['zustand/immer', never]]>(
           name: currFile.name,
           file: currFile,
           ctrl,
-          status: UploadStatusEnumValues.PROGRESS
+          status: UploadStatusEnumValues.PROGRESS,
+          uploadSizeInBytes: 0,
+          originalSizeInBytes: currFile.size
         }
 
         set((oldState) => { oldState.uploads.set(uploadId, upload) })

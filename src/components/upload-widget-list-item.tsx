@@ -15,6 +15,11 @@ interface IProps {
 export function UploadWidgetListItem(props: IProps) {
   const cancelUpload = useUploads((store) => store.cancelUpload)
 
+  const progress = Math.min(
+    Math.round((props.upload.uploadSizeInBytes * 100) / props.upload.originalSizeInBytes),
+    100
+  )
+
   return (
     <motion.div
       className="p-3 rounded-lg flex flex-col gap-3 shadow-shape-content bg-white/2 relative overflow-hidden"
@@ -29,7 +34,7 @@ export function UploadWidgetListItem(props: IProps) {
         </span>
 
         <span className="text-[0.625rem] text-zinc-400 flex gap-1.5 items-center">
-          <span className="line-through">{formatBytes(props.upload.file.size)}</span>
+          <span className="line-through">{formatBytes(props.upload.originalSizeInBytes)}</span>
 
           <span className="size-1 rounded-full bg-zinc-700" />
 
@@ -44,11 +49,11 @@ export function UploadWidgetListItem(props: IProps) {
           <span className="size-1 rounded-full bg-zinc-700" />
 
           {props.upload.status === UploadStatusEnumValues.PROGRESS && (
-            <span>43%</span>
+            <span className='text-indigo-400'>{progress}%</span>
           )}
 
-          {props.upload.status === UploadStatusEnumValues.PROGRESS && (
-            <span>100%</span>
+          {props.upload.status === UploadStatusEnumValues.SUCCESS && (
+            <span className='text-green-400'>100%</span>
           )}
 
           {props.upload.status === UploadStatusEnumValues.ERROR && (
@@ -66,13 +71,14 @@ export function UploadWidgetListItem(props: IProps) {
           data-status={props.upload.status}
           className="
             h-1
+            transition-all
             data-[status=PROGRESS]:bg-indigo-500
-            data-[status=CANCELED]:bg-yellow-400
+            data-[status=CANCELED]:bg-amber-400
             data-[status=ERROR]:bg-red-400
             data-[status=SUCCESS]:bg-green-400
           "
           style={{
-            width: props.upload.status === UploadStatusEnumValues.PROGRESS ? '43%' : '100%',
+            width: props.upload.status === UploadStatusEnumValues.PROGRESS ? `${progress}%` : '100%',
           }}
         />
       </Progress.Root>
