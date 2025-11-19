@@ -4,8 +4,10 @@ import { create } from "zustand"
 import { immer } from 'zustand/middleware/immer'
 import { useShallow } from 'zustand/shallow'
 import { uploadFileController } from '../controllers/upload-file-controller'
+import type { IUploadFileResponseDTO } from '../dtos/IUploadFileResponseDTO'
 import { UploadStatusEnumValues } from '../enums/upload-status-enum'
 import type { UploadTp } from "../types/upload"
+import { compressImage } from '../utils/compress-image'
 
 type TUploadsState = {
   uploads: Map<string, UploadTp>
@@ -39,15 +41,24 @@ export const useUploads = create<TUploadsState, [['zustand/immer', never]]>(
       if (!upload) return
 
       try {
-        await uploadFileController({
+        const compressedImg = await compressImage({
           file: upload.file,
+          maxHeight: 1000,
+          maxWidth: 1000,
+          quality: 0.8
+        })
+
+        updateUpload(uploadId, { compressedSizeInBytes: compressedImg.size })
+
+        const response: IUploadFileResponseDTO = await uploadFileController({
+          file: compressedImg,
           signal: upload.ctrl.signal,
           onProgress: (sizeInBytes) => {
             updateUpload(uploadId, { uploadSizeInBytes: sizeInBytes })
           }
         })
 
-        updateUpload(uploadId, { status: UploadStatusEnumValues.SUCCESS })
+        updateUpload(uploadId, { status: UploadStatusEnumValues.SUCCESS, remoteUrl: response.url })
       } catch (err) {
         if (!(err instanceof CanceledError)) {
           const axiosError = err as AxiosError
@@ -120,8 +131,10 @@ export const usePendingUploads = () => {
 
       const { total, uploaded } = Array.from(store.uploads.values()).reduce(
         (acc, upload) => {
-          acc.total += upload.originalSizeInBytes
-          acc.uploaded += upload.uploadSizeInBytes
+          if (upload.compressedSizeInBytes)
+            acc.uploaded += upload.uploadSizeInBytes
+
+          acc.total += upload.compressedSizeInBytes || upload.originalSizeInBytes
 
           return acc
         },

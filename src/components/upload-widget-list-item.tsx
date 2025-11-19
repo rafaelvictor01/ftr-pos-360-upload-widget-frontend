@@ -16,7 +16,9 @@ export function UploadWidgetListItem(props: IProps) {
   const cancelUpload = useUploads((store) => store.cancelUpload)
 
   const progress = Math.min(
-    Math.round((props.upload.uploadSizeInBytes * 100) / props.upload.originalSizeInBytes),
+    props.upload.compressedSizeInBytes
+      ? Math.round((props.upload.uploadSizeInBytes * 100) / props.upload.compressedSizeInBytes)
+      : 0,
     100
   )
 
@@ -39,11 +41,13 @@ export function UploadWidgetListItem(props: IProps) {
           <span className="size-1 rounded-full bg-zinc-700" />
 
           <span>
-            300kb
+            {formatBytes(props.upload.compressedSizeInBytes ?? 0)}
 
-            <span className="text-green-400 ml-1">
-              -94%
-            </span>
+            {props.upload.compressedSizeInBytes && (
+              <span className="text-green-400 ml-1">
+                -{Math.round((props.upload.originalSizeInBytes - props.upload.compressedSizeInBytes) * 100 / props.upload.originalSizeInBytes)}%
+              </span>
+            )}
           </span>
 
           <span className="size-1 rounded-full bg-zinc-700" />
@@ -85,16 +89,20 @@ export function UploadWidgetListItem(props: IProps) {
 
       <div className="absolute top-2.5 right-2.5 flex items-center gap-1">
         <Button
+          asChild
           size="icon-sm"
-          disabled={props.upload.status !== UploadStatusEnumValues.SUCCESS}
+          aria-disabled={(props.upload.status !== UploadStatusEnumValues.SUCCESS) || !props.upload.remoteUrl}
         >
-          <Download className="size-4" strokeWidth={1.5} />
-          <span className="sr-only">Download compressed image</span>
+          <a href={props.upload.remoteUrl}>
+            <Download className="size-4" strokeWidth={1.5} />
+            <span className="sr-only">Download compressed image</span>
+          </a>
         </Button>
 
         <Button
           size="icon-sm"
-          disabled={props.upload.status !== UploadStatusEnumValues.SUCCESS}
+          disabled={(props.upload.status !== UploadStatusEnumValues.SUCCESS) || !props.upload.remoteUrl}
+          onClick={() => props.upload.remoteUrl && navigator.clipboard.writeText(props.upload.remoteUrl)}
         >
           <Link2 className="size-4" strokeWidth={1.5} />
           <span className="sr-only">Copy remote URL</span>
