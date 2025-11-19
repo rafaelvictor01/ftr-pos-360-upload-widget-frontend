@@ -11,5 +11,5 @@ export type UploadTp = {
 
   remoteUrl?: string
 
-  ctrl: AbortController
+  ctrl?: AbortController
 }

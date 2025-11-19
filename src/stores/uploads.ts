@@ -14,6 +14,7 @@ type TUploadsState = {
 
   addUploads: (files: File[]) => void
   cancelUpload: (uploadId: string) => void
+  retryUpload: (uploadId: string) => void
 }
 
 enableMapSet()
@@ -21,7 +22,7 @@ enableMapSet()
 export const useUploads = create<TUploadsState, [['zustand/immer', never]]>(
   immer((set, get) => {
     function updateUpload(uploadId: string, data: Partial<UploadTp>) {
-      const upload = get().uploads.get(uploadId);
+      const upload = get().uploads.get(uploadId)
 
       if (!upload) {
         return
@@ -40,6 +41,16 @@ export const useUploads = create<TUploadsState, [['zustand/immer', never]]>(
 
       if (!upload) return
 
+      const ctrl = new AbortController()
+
+      updateUpload(uploadId, {
+        ctrl: ctrl,
+        uploadSizeInBytes: 0,
+        remoteUrl: undefined,
+        compressedSizeInBytes: undefined,
+        status: UploadStatusEnumValues.PROGRESS
+      })
+
       try {
         const compressedImg = await compressImage({
           file: upload.file,
@@ -52,7 +63,7 @@ export const useUploads = create<TUploadsState, [['zustand/immer', never]]>(
 
         const response: IUploadFileResponseDTO = await uploadFileController({
           file: compressedImg,
-          signal: upload.ctrl.signal,
+          signal: ctrl?.signal,
           onProgress: (sizeInBytes) => {
             updateUpload(uploadId, { uploadSizeInBytes: sizeInBytes })
           }
@@ -82,7 +93,7 @@ export const useUploads = create<TUploadsState, [['zustand/immer', never]]>(
 
       if (!upload) return
 
-      upload.ctrl.abort()
+      upload.ctrl?.abort()
 
       updateUpload(uploadId, {
         status: UploadStatusEnumValues.CANCELED,
@@ -90,15 +101,17 @@ export const useUploads = create<TUploadsState, [['zustand/immer', never]]>(
       })
     }
 
+    function retryUpload(uploadId: string) {
+      processUpload(uploadId)
+    }
+
     function addUploads(files: File[]) {
       files.forEach((currFile) => {
         const uploadId = crypto.randomUUID()
-        const ctrl = new AbortController()
 
         const upload: UploadTp = {
           name: currFile.name,
           file: currFile,
-          ctrl,
           status: UploadStatusEnumValues.PROGRESS,
           uploadSizeInBytes: 0,
           originalSizeInBytes: currFile.size
@@ -113,7 +126,8 @@ export const useUploads = create<TUploadsState, [['zustand/immer', never]]>(
     return {
       uploads: new Map(),
       addUploads,
-      cancelUpload
+      cancelUpload,
+      retryUpload
     }
   })
 )

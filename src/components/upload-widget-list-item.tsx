@@ -4,6 +4,7 @@ import { motion } from 'motion/react'
 import { type UploadStatusEnum, UploadStatusEnumValues } from '../enums/upload-status-enum'
 import { useUploads } from '../stores/uploads'
 import type { UploadTp } from '../types/upload'
+import { downloadUrl } from '../utils/download-url'
 import { formatBytes } from '../utils/format-bytes'
 import { Button } from './button'
 
@@ -14,6 +15,7 @@ interface IProps {
 
 export function UploadWidgetListItem(props: IProps) {
   const cancelUpload = useUploads((store) => store.cancelUpload)
+  const retryUpload = useUploads((store) => store.retryUpload)
 
   const progress = Math.min(
     props.upload.compressedSizeInBytes
@@ -32,7 +34,7 @@ export function UploadWidgetListItem(props: IProps) {
       <div className="flex flex-col gap-1">
         <span className="text-xs font-medium flex items-center gap-1">
           <ImageUp className="size-3 text-zinc-300" strokeWidth={1.5} />
-          <span>{props.upload.name}</span>
+          <span className='max-w-[180px] truncate'>{props.upload.name}</span>
         </span>
 
         <span className="text-[0.625rem] text-zinc-400 flex gap-1.5 items-center">
@@ -87,16 +89,14 @@ export function UploadWidgetListItem(props: IProps) {
         />
       </Progress.Root>
 
-      <div className="absolute top-2.5 right-2.5 flex items-center gap-1">
+      <div className="absolute top-2 right-2 flex items-center gap-1">
         <Button
-          asChild
           size="icon-sm"
+          onClick={() => downloadUrl(props.upload.remoteUrl || '')}
           aria-disabled={(props.upload.status !== UploadStatusEnumValues.SUCCESS) || !props.upload.remoteUrl}
         >
-          <a href={props.upload.remoteUrl}>
-            <Download className="size-4" strokeWidth={1.5} />
-            <span className="sr-only">Download compressed image</span>
-          </a>
+          <Download className="size-4" strokeWidth={1.5} />
+          <span className="sr-only">Download compressed image</span>
         </Button>
 
         <Button
@@ -110,6 +110,7 @@ export function UploadWidgetListItem(props: IProps) {
 
         <Button
           size="icon-sm"
+          onClick={() => retryUpload(props.uploadId)}
           disabled={!([UploadStatusEnumValues.CANCELED, UploadStatusEnumValues.ERROR] as UploadStatusEnum[]).includes(props.upload.status)}
         >
           <RefreshCcw className="size-4" strokeWidth={1.5} />
